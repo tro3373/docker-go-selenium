@@ -1,0 +1,47 @@
+# https://qiita.com/memakura/items/20a02161fa7e18d8a693
+version: '3'
+services:
+  selenium-hub:
+    container_name: selenium-hub
+    # image: selenium/hub:3.141.59-oxygen
+    image: selenium/hub
+    container_name: selenium-hub
+    ports:
+      - 4444:4444
+  chrome:
+    container_name: chrome
+    # image: selenium/node-chrome:3.141.59-oxygen
+    image: selenium/node-chrome-debug
+    volumes:
+      - /dev/shm:/dev/shm
+      - ./src/downloads/.seluser:/home/seluser/Downloads
+    depends_on:
+      - selenium-hub
+    ports:
+      - 5900:5900
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      # - DBUS_SESSION_BUS_ADDRESS=/dev/null
+  # firefox:
+  #   image: selenium/node-firefox:3.141.59-oxygen
+  #   container_name: firefox
+  #   volumes:
+  #     - /dev/shm:/dev/shm
+  #   depends_on:
+  #     - selenium-hub
+  #   environment:
+  #     - HUB_HOST=selenium-hub
+  #     - HUB_PORT=4444
+  golang:
+    # image: golang:latest
+    build: ./go-selenium
+    container_name: golang
+    links:
+      - selenium-hub:hub
+    command: 'tail -f /dev/null'
+    working_dir: /works/
+    volumes:
+      - ./src/:/works/
+    environment:
+      - TZ=Asia/Tokyo
